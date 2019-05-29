@@ -1,0 +1,48 @@
+{
+  "project_info": {
+    "project_number": "1011057493426",
+    "firebase_url": "https://wemiftalk-fc07a.firebaseio.com",
+    "project_id": "wemiftalk-fc07a",
+    "storage_bucket": "wemiftalk-fc07a.appspot.com"
+  },
+  "client": [
+    {
+      "client_info": {
+        "mobilesdk_app_id": "1:1011057493426:android:2fe1fcf761b12d8a",
+        "android_client_info": {
+          "package_name": "com.example.wemiftalk"
+        }
+      },
+      "oauth_client": [
+        {
+          "client_id": "1011057493426-tbsaju6bmt7uaojdh2u4njoojkq1qjb7.apps.googleusercontent.com",
+          "client_type": 1,
+          "android_info": {
+            "package_name": "com.example.wemiftalk",
+            "certificate_hash": "17c682fcde2a36822ead4962c1135fe1847ab0d1"
+          }
+        },
+        {
+          "client_id": "1011057493426-imic5lj35agurivgbfbq8k9ovsmr840a.apps.googleusercontent.com",
+          "client_type": 3
+        }
+      ],
+      "api_key": [
+        {
+          "current_key": "AIzaSyBhkQIEDb3IdN6DZYRV18iI_yBpyyjKrtE"
+        }
+      ],
+      "services": {
+        "appinvite_service": {
+          "other_platform_oauth_client": [
+            {
+              "client_id": "1011057493426-imic5lj35agurivgbfbq8k9ovsmr840a.apps.googleusercontent.com",
+              "client_type": 3
+            }
+          ]
+        }
+      }
+    }
+  ],
+  "configuration_version": "1"
+}
