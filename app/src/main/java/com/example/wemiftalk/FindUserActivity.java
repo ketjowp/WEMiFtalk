@@ -10,6 +10,8 @@ import android.support.v7.widget.RecyclerView;
 import android.telephony.TelephonyManager;
 import android.widget.LinearLayout;
 
+import com.example.wemiftalk.User.UserObject;
+import com.example.wemiftalk.Utils.CountryToPhonePrefix;
 import com.google.firebase.database.DataSnapshot;
 import com.google.firebase.database.DatabaseError;
 import com.google.firebase.database.DatabaseReference;
@@ -58,7 +60,7 @@ public class FindUserActivity extends AppCompatActivity {
 
 
 
-            UserObject mContact = new UserObject(name, phone);
+            UserObject mContact = new UserObject("", name, phone);
             contactList.add(mContact);
             getUserDetails(mContact);
         }
@@ -79,7 +81,7 @@ public class FindUserActivity extends AppCompatActivity {
                         if(childSnapshot.child("phone").getValue()!=null)
                             name = childSnapshot.child("name").getValue().toString();
 
-                        UserObject mUser = new UserObject(name,phone);
+                        UserObject mUser = new UserObject(childSnapshot.getKey(), name,phone);
                         if(name.equals(phone))
                             for(UserObject mContactIterator : contactList){
                                 if(mContactIterator.getPhone().equals(mUser.getPhone())){

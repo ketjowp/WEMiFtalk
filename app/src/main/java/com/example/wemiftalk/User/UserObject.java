@@ -1,4 +1,4 @@
-package com.example.wemiftalk;
+package com.example.wemiftalk.User;
 
 public class UserObject {
 
@@ -6,13 +6,18 @@ public class UserObject {
         this.name = name;
     }
 
-    private String name,
+    private String uid,
+                    name,
                     phone;
 
-    public UserObject(String name, String phone){
+    public UserObject(String uid, String name, String phone){
+        this.uid = uid;
         this.name = name;
         this.phone = phone;
+
     }
+
+    public String getUid() { return uid; }
 
     public String getName() {
         return name;

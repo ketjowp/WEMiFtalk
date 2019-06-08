@@ -1,4 +1,4 @@
-package com.example.wemiftalk;
+package com.example.wemiftalk.Utils;
 
 import java.util.HashMap;
 import java.util.Map;
