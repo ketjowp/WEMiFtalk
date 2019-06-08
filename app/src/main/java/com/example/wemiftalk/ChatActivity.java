@@ -134,7 +134,7 @@ public class ChatActivity extends AppCompatActivity {
     ArrayList<String> mediaUriList = new ArrayList<>();
 
     private void initializeMedia() { //RecyclerView
-        messageList=new ArrayList<>();
+        //messageList=new ArrayList<>();
         mMedia= findViewById(R.id.mediaList);
         mMedia.setNestedScrollingEnabled(false); //płynne przewijanie
         mMedia.setHasFixedSize(false);
