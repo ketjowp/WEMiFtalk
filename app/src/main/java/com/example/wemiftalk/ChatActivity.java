@@ -1,5 +1,6 @@
 package com.example.wemiftalk;
 
+import android.content.Intent;
 import android.support.annotation.NonNull;
 import android.support.annotation.Nullable;
 import android.os.Bundle;
@@ -12,6 +13,7 @@ import android.widget.EditText;
 import android.widget.LinearLayout;
 import android.widget.RelativeLayout;
 
+import com.example.wemiftalk.Chat.MediaAdapter;
 import com.example.wemiftalk.Chat.MessageAdapter;
 import com.example.wemiftalk.Chat.MessageObject;
 import com.google.firebase.auth.FirebaseAuth;
@@ -26,9 +28,9 @@ import java.util.HashMap;
 import java.util.Map;
 
 public class ChatActivity extends AppCompatActivity {
-    private RecyclerView mChat;
-    private RecyclerView.Adapter mChatAdapter;
-    private RecyclerView.LayoutManager mChatLayoutManager;
+    private RecyclerView mChat,mMedia;
+    private RecyclerView.Adapter mChatAdapter,mMediaAdapter;
+    private RecyclerView.LayoutManager mChatLayoutManager,mMediaLayoutManager;
 
     ArrayList<MessageObject> messageList;
 
@@ -46,15 +48,25 @@ public class ChatActivity extends AppCompatActivity {
         mChatDb=FirebaseDatabase.getInstance().getReference().child("chat").child(chatID);
 
         Button mSend = findViewById(R.id.send);
+        Button mAddMedia = findViewById(R.id.addMedia);
         mSend.setOnClickListener(new View.OnClickListener() {
             @Override
             public void onClick(View v) {
                 sendMessage();
             }
         });
-        initializeRecyclerView();
+        mAddMedia.setOnClickListener(new View.OnClickListener() {
+            @Override
+            public void onClick(View v) {
+                openGallery();
+            }
+        }); //listner do media
+        initializeMessage();
+        initializeMedia();
         getChatMessages();
     }
+
+
 
     private void getChatMessages() { //metoda pozwalająca na pobieranie i wyświetlanie wiadomości, tylko jeden Listner używany
         mChatDb.addChildEventListener(new ChildEventListener() {
@@ -104,7 +116,9 @@ public class ChatActivity extends AppCompatActivity {
 
     }
 
-    private void initializeRecyclerView() {
+
+
+    private void initializeMessage() { //RecyclerView
         messageList=new ArrayList<>();
         mChat= findViewById(R.id.messageList);
         mChat.setNestedScrollingEnabled(false); //płynne przewijanie
@@ -114,6 +128,46 @@ public class ChatActivity extends AppCompatActivity {
         mChatAdapter = new MessageAdapter(messageList);
         mChat.setAdapter(mChatAdapter);
 
+    }
 
+    int PICK_IMAGE_INTENT=1;
+    ArrayList<String> mediaUriList = new ArrayList<>();
+
+    private void initializeMedia() { //RecyclerView
+        messageList=new ArrayList<>();
+        mMedia= findViewById(R.id.mediaList);
+        mMedia.setNestedScrollingEnabled(false); //płynne przewijanie
+        mMedia.setHasFixedSize(false);
+        mMediaLayoutManager = new LinearLayoutManager(getApplicationContext(), LinearLayout.HORIZONTAL, false); //późniejsze dodanie ozdobników, teraz false
+        mMedia.setLayoutManager(mMediaLayoutManager); //przypisuje menadżera do layoutu
+        mMediaAdapter = new MediaAdapter(getApplicationContext(),mediaUriList);
+        mMedia.setAdapter(mMediaAdapter);
+
+    }
+
+    private void openGallery() {
+        Intent intent = new Intent();
+        intent.setType("image/*");
+        intent.putExtra(Intent.EXTRA_ALLOW_MULTIPLE, true);
+        intent.setAction(intent.ACTION_GET_CONTENT);
+        startActivityForResult(Intent.createChooser(intent,"Wybierz Zdjęcia"),PICK_IMAGE_INTENT);
+    }
+
+    @Override
+    protected void onActivityResult(int requestCode, int resultCode, Intent data) {
+        super.onActivityResult(requestCode, resultCode, data);
+        if(resultCode == RESULT_OK){
+            if(requestCode == PICK_IMAGE_INTENT){
+                if(data.getClipData()== null) { //jeden obraz
+                    mediaUriList.add(data.getData().toString()); //przy wybraniu jednego zdjęcia dodaje jego Uri do listy
+                }else{
+                    for(int i=0;i<data.getClipData().getItemCount(); i++){
+                        mediaUriList.add(data.getClipData().getItemAt(i).getUri().toString()); //dodanie wszystkich wybranych zdjęć do listy
+                    }
+                }
+
+                mMediaAdapter.notifyDataSetChanged(); //powiadomienie o zmianie dnaych, aby nastąpiło natychmiastowe dodanie zdjęć
+            }
+        }
     }
 }

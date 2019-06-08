@@ -8,34 +8,58 @@
     tools:context=".ChatActivity">
 
     <android.support.v7.widget.RecyclerView
+        android:id="@+id/messageList"
         android:layout_width="match_parent"
         android:layout_height="wrap_content"
-        android:id="@+id/messageList"
-        android:layout_above="@+id/sendLayout"/>
+        android:layout_above="@+id/sendLayout"
+        android:layout_marginBottom="0dp" />
 
     <LinearLayout
         android:layout_alignParentBottom="true"
         android:layout_width="match_parent"
         android:layout_height="wrap_content"
-        android:orientation="horizontal"
+        android:orientation="vertical"
         android:id="@+id/sendLayout">
 
-        <EditText
-            android:id="@+id/messageInput"
-            android:layout_width="0dp"
+        <android.support.v7.widget.RecyclerView
+            android:layout_width="match_parent"
+            android:layout_height="match_parent"
+            android:id="@+id/mediaList"/>
+        <LinearLayout
+            android:layout_width="match_parent"
             android:layout_height="wrap_content"
-            android:layout_weight="0.75"
-            android:backgroundTint="#00FFE7"
-            android:ems="10"
-            android:hint="Wpisz wiadomosc"
-            android:inputType="textShortMessage|textLongMessage" />
+            android:orientation="horizontal">
 
-        <Button
-            android:id="@+id/send"
-            android:layout_width="0dp"
-            android:layout_height="wrap_content"
-            android:layout_weight="0.25"
-            android:text="Wyślij" />
+
+            <EditText
+                android:id="@+id/messageInput"
+                android:layout_width="0dp"
+                android:layout_height="wrap_content"
+                android:layout_weight="0.6"
+                android:backgroundTint="#00FFE7"
+                android:ems="10"
+                android:hint="Wpisz wiadomosc"
+                android:inputType="textShortMessage|textLongMessage" />
+
+            <Button
+                android:id="@+id/addMedia"
+                android:layout_width="0dp"
+                android:layout_height="wrap_content"
+                android:layout_weight="0.2"
+                android:backgroundTint="#00E3FF"
+                android:foreground="@android:drawable/ic_menu_gallery" />
+
+            <Button
+                android:id="@+id/send"
+                android:layout_width="0dp"
+                android:layout_height="wrap_content"
+                android:layout_weight="0.2"
+                android:backgroundTint="#00E1FF"
+                android:foreground="@android:drawable/ic_menu_send" />
+
+
+        </LinearLayout>
     </LinearLayout>
+
 
 </RelativeLayout>
