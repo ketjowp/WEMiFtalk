@@ -81,12 +81,18 @@ public class ChatActivity extends AppCompatActivity {
                 if(dataSnapshot.exists()){
                     String  text = "",
                             creatorID="";
+                    ArrayList<String> mediaUrlList = new ArrayList<>();
+
                     if(dataSnapshot.child("text").getValue() != null)
                         text=dataSnapshot.child("text").getValue().toString();
                     if(dataSnapshot.child("creator").getValue() != null)
                         creatorID=dataSnapshot.child("creator").getValue().toString();
 
-                    MessageObject mMessage = new MessageObject(dataSnapshot.getKey(),creatorID,text); //stworzenie obiektu message z zawartością pobraną powyżej
+                    if(dataSnapshot.child("media").getChildrenCount() > 0)
+                        for (DataSnapshot mediaSnapshot : dataSnapshot.child("media").getChildren() )
+                            mediaUrlList.add(mediaSnapshot.getValue().toString());
+
+                    MessageObject mMessage = new MessageObject(dataSnapshot.getKey(),creatorID,text, mediaUrlList); //stworzenie obiektu message z zawartością pobraną powyżej
                     messageList.add(mMessage); //dodanie message do listy wiadomości
                     mChatLayoutManager.scrollToPosition(messageList.size()-1); // scrolowanie listy do ostatniej wiadomości
                     mChatAdapter.notifyDataSetChanged();
