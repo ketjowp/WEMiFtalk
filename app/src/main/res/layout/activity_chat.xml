@@ -21,14 +21,14 @@
         android:id="@+id/sendLayout">
 
         <EditText
-            android:id="@+id/new_message"
+            android:id="@+id/messageInput"
             android:layout_width="0dp"
             android:layout_height="wrap_content"
             android:layout_weight="0.75"
             android:backgroundTint="#00FFE7"
             android:ems="10"
-            android:hint="Wpisz wiadomość"
-            android:inputType="textShortMessage" />
+            android:hint="Wpisz wiadomosc"
+            android:inputType="textShortMessage|textLongMessage" />
 
         <Button
             android:id="@+id/send"

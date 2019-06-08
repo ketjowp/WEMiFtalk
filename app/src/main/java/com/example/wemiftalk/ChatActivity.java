@@ -87,10 +87,7 @@ public class ChatActivity extends AppCompatActivity {
     }
 
     private void sendMessage(){
-        EditText newMessage = findViewById(R.id.new_message);
-
-        RelativeLayout layout = findViewById(R.id.relative_layout);
-        layout.addView(newMessage);
+        EditText newMessage = findViewById(R.id.messageInput);
 
         if(!newMessage.getText().toString().isEmpty()){
             DatabaseReference newMessageDb= mChatDb.push(); //push - stworzenie nowej wiadomości
