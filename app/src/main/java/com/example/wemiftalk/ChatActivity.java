@@ -1,6 +1,7 @@
 package com.example.wemiftalk;
 
 import android.content.Intent;
+import android.net.Uri;
 import android.support.annotation.NonNull;
 import android.support.annotation.Nullable;
 import android.os.Bundle;
@@ -16,12 +17,17 @@ import android.widget.RelativeLayout;
 import com.example.wemiftalk.Chat.MediaAdapter;
 import com.example.wemiftalk.Chat.MessageAdapter;
 import com.example.wemiftalk.Chat.MessageObject;
+import com.google.android.gms.common.internal.Objects;
+import com.google.android.gms.tasks.OnSuccessListener;
 import com.google.firebase.auth.FirebaseAuth;
 import com.google.firebase.database.ChildEventListener;
 import com.google.firebase.database.DataSnapshot;
 import com.google.firebase.database.DatabaseError;
 import com.google.firebase.database.DatabaseReference;
 import com.google.firebase.database.FirebaseDatabase;
+import com.google.firebase.storage.FirebaseStorage;
+import com.google.firebase.storage.StorageReference;
+import com.google.firebase.storage.UploadTask;
 
 import java.util.ArrayList;
 import java.util.HashMap;
@@ -75,12 +81,18 @@ public class ChatActivity extends AppCompatActivity {
                 if(dataSnapshot.exists()){
                     String  text = "",
                             creatorID="";
+                    ArrayList<String> mediaUrlList = new ArrayList<>();
+
                     if(dataSnapshot.child("text").getValue() != null)
                         text=dataSnapshot.child("text").getValue().toString();
                     if(dataSnapshot.child("creator").getValue() != null)
                         creatorID=dataSnapshot.child("creator").getValue().toString();
 
-                    MessageObject mMessage = new MessageObject(dataSnapshot.getKey(),creatorID,text); //stworzenie obiektu message z zawartością pobraną powyżej
+                    if(dataSnapshot.child("media").getChildrenCount() > 0)
+                        for (DataSnapshot mediaSnapshot : dataSnapshot.child("media").getChildren() )
+                            mediaUrlList.add(mediaSnapshot.getValue().toString());
+
+                    MessageObject mMessage = new MessageObject(dataSnapshot.getKey(),creatorID,text, mediaUrlList); //stworzenie obiektu message z zawartością pobraną powyżej
                     messageList.add(mMessage); //dodanie message do listy wiadomości
                     mChatLayoutManager.scrollToPosition(messageList.size()-1); // scrolowanie listy do ostatniej wiadomości
                     mChatAdapter.notifyDataSetChanged();
@@ -97,26 +109,71 @@ public class ChatActivity extends AppCompatActivity {
             public void onCancelled(@NonNull DatabaseError databaseError) { }
         });
     }
-
+    int totalMediaUploaded = 0 ;
+    ArrayList<String> mediaIdList = new ArrayList<>();
+    EditText newMessage;
     private void sendMessage(){
-        EditText newMessage = findViewById(R.id.messageInput);
+        newMessage = findViewById(R.id.messageInput);
 
-        if(!newMessage.getText().toString().isEmpty()){
-            DatabaseReference newMessageDb= mChatDb.push(); //push - stworzenie nowej wiadomości
 
-            Map newMessageMap = new HashMap<>();
-            newMessageMap.put("text",newMessage.getText().toString());
+            String messageId = mChatDb.push().getKey();
+            final DatabaseReference newMessageDb= mChatDb.child(messageId); //push - stworzenie nowej wiadomości
+
+             final Map newMessageMap = new HashMap<>();
+
             newMessageMap.put("creator", FirebaseAuth.getInstance().getUid());
+
+            if(!newMessage.getText().toString().isEmpty())
+                newMessageMap.put("text",newMessage.getText().toString());
 
             newMessageDb.updateChildren(newMessageMap);
 
+            if(!mediaUriList.isEmpty()){
+                for (String mediaUri : mediaUriList) {
+                    String mediaId = newMessageDb.child("media").push().getKey();
+                    mediaIdList.add(mediaId);
+                    final StorageReference filePath = FirebaseStorage.getInstance().getReference().child("chat").child(chatID).child(messageId).child(mediaId);
+
+
+                    UploadTask uploadTask = filePath.putFile(Uri.parse(mediaUri));
+
+                    uploadTask.addOnSuccessListener(new OnSuccessListener<UploadTask.TaskSnapshot>() {
+                        @Override
+                        public void onSuccess(UploadTask.TaskSnapshot taskSnapshot) {
+                            filePath.getDownloadUrl().addOnSuccessListener(new OnSuccessListener<Uri>() {
+                                @Override
+                                public void onSuccess(Uri uri) {
+                                   newMessageMap.put(("/media/" + mediaIdList.get(totalMediaUploaded)) + "/", uri.toString()) ;
+
+                                   totalMediaUploaded++;
+                                   if(totalMediaUploaded == mediaUriList.size()){
+                                       updateDatabaseWithNewMessage(newMessageDb, newMessageMap);
+                                   }
+                                }
+                            });
+                        }
+                    });
+
+            }
+            }else {
+                if (!newMessage.getText().toString().isEmpty())
+                    updateDatabaseWithNewMessage(newMessageDb, newMessageMap);
+            }
+
+
         }
 
+
+
+
+
+    private void updateDatabaseWithNewMessage (DatabaseReference newMessageDb,Map newMessageMap){
+        newMessageDb.updateChildren(newMessageMap);
         newMessage.setText(null); //po wysłaniu kasuje pole tekstowe
-
+        mediaUriList.clear();
+        mediaIdList.clear();
+        mMediaAdapter.notifyDataSetChanged();
     }
-
-
 
     private void initializeMessage() { //RecyclerView
         messageList=new ArrayList<>();
@@ -134,7 +191,7 @@ public class ChatActivity extends AppCompatActivity {
     ArrayList<String> mediaUriList = new ArrayList<>();
 
     private void initializeMedia() { //RecyclerView
-        //messageList=new ArrayList<>();
+        mediaUriList=new ArrayList<>();
         mMedia= findViewById(R.id.mediaList);
         mMedia.setNestedScrollingEnabled(false); //płynne przewijanie
         mMedia.setHasFixedSize(false);
