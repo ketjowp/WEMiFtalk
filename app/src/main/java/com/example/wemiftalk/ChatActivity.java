@@ -14,9 +14,12 @@ import android.widget.EditText;
 import android.widget.LinearLayout;
 import android.widget.RelativeLayout;
 
+import com.example.wemiftalk.Chat.ChatObject;
 import com.example.wemiftalk.Chat.MediaAdapter;
 import com.example.wemiftalk.Chat.MessageAdapter;
 import com.example.wemiftalk.Chat.MessageObject;
+import com.example.wemiftalk.User.UserObject;
+import com.example.wemiftalk.Utils.SendNotification;
 import com.google.android.gms.common.internal.Objects;
 import com.google.android.gms.tasks.OnSuccessListener;
 import com.google.firebase.auth.FirebaseAuth;
@@ -40,18 +43,18 @@ public class ChatActivity extends AppCompatActivity {
 
     ArrayList<MessageObject> messageList;
 
-    String chatID;
+    ChatObject mChatObject;
 
-    DatabaseReference mChatDb;
+    DatabaseReference mChatMessagesDb;
 
     @Override
     protected void onCreate(Bundle savedInstanceState) {
         super.onCreate(savedInstanceState);
         setContentView(R.layout.activity_chat);
 
-        chatID=getIntent().getExtras().getString("chatID"); //odebranie nazwy czatu z main Activity
+        mChatObject = (ChatObject) getIntent().getSerializableExtra("chatObject");
 
-        mChatDb=FirebaseDatabase.getInstance().getReference().child("chat").child(chatID);
+        mChatMessagesDb=FirebaseDatabase.getInstance().getReference().child("chat").child(mChatObject.getChatId()).child("messages");
 
         Button mSend = findViewById(R.id.send);
         Button mAddMedia = findViewById(R.id.addMedia);
@@ -75,7 +78,7 @@ public class ChatActivity extends AppCompatActivity {
 
 
     private void getChatMessages() { //metoda pozwalająca na pobieranie i wyświetlanie wiadomości, tylko jeden Listner używany
-        mChatDb.addChildEventListener(new ChildEventListener() {
+        mChatMessagesDb.addChildEventListener(new ChildEventListener() {
             @Override
             public void onChildAdded(@NonNull DataSnapshot dataSnapshot, @Nullable String s) { //kiedy zostanie dodany child - message - na to zwraca uwagę
                 if(dataSnapshot.exists()){
@@ -116,8 +119,8 @@ public class ChatActivity extends AppCompatActivity {
         newMessage = findViewById(R.id.messageInput);
 
 
-            String messageId = mChatDb.push().getKey();
-            final DatabaseReference newMessageDb= mChatDb.child(messageId); //push - stworzenie nowej wiadomości
+            String messageId = mChatMessagesDb.push().getKey();
+            final DatabaseReference newMessageDb= mChatMessagesDb.child(messageId); //push - stworzenie nowej wiadomości
 
              final Map newMessageMap = new HashMap<>();
 
@@ -132,7 +135,7 @@ public class ChatActivity extends AppCompatActivity {
                 for (String mediaUri : mediaUriList) {
                     String mediaId = newMessageDb.child("media").push().getKey();
                     mediaIdList.add(mediaId);
-                    final StorageReference filePath = FirebaseStorage.getInstance().getReference().child("chat").child(chatID).child(messageId).child(mediaId);
+                    final StorageReference filePath = FirebaseStorage.getInstance().getReference().child("chat").child(mChatObject.getChatId()).child(messageId).child(mediaId);
 
 
                     UploadTask uploadTask = filePath.putFile(Uri.parse(mediaUri));
@@ -173,6 +176,19 @@ public class ChatActivity extends AppCompatActivity {
         mediaUriList.clear();
         mediaIdList.clear();
         mMediaAdapter.notifyDataSetChanged();
+
+        String message;
+
+        if (newMessageMap.get("text") != null)
+            message = newMessageMap.get("text").toString();
+        else
+            message = "Otrzymano obraz";
+
+        for(UserObject mUser : mChatObject.getUserObjectArrayList()){ // wysylanie powiadomienia do uztkownikow
+            if(! mUser.getUid().equals(FirebaseAuth.getInstance().getUid())){
+                new SendNotification(message, "Nowa wiadomość", mUser.getNotificationKey());
+            }
+        }
     }
 
     private void initializeMessage() { //RecyclerView
